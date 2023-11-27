@@ -8,6 +8,8 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Repositories\UserRepository;
 use App\Repositories\UserDetailsRepository;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Auth\Access\AuthorizationException;
 
 class UserController extends Controller
 {
@@ -58,6 +60,12 @@ class UserController extends Controller
     public function delete(User $user)
     {
         try {
+
+            $authenticatedUser = Auth::user();
+
+            // Check authorization before beginning the transaction
+            $this->authorize('delete', [$authenticatedUser, $user]);
+
             DB::beginTransaction();
 
             $this->userRepository->delete($user);
@@ -69,9 +77,11 @@ class UserController extends Controller
             DB::commit();
 
             return response()->json(['message' => 'User deleted successfully'], 200);
+        } catch (AuthorizationException $e) {
+            // If the policy fails, catch the AuthorizationException and return a specific error message
+            return response()->json(['message' => 'You cannot delete your own account'], 403);
         } catch (\Exception $e) {
             DB::rollBack();
-
             return response()->json(['message' => 'Failed to delete user'], 500);
         }
     }
