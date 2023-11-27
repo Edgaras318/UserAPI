@@ -16,15 +16,11 @@ use App\Http\Controllers\UserController;
 */
 
 // Public routes
-Route::post('/', function () {
-    return 'test';
-});
-
 Route::post('/register', [UserController::class, 'create']);
 
 // Protected routes
 Route::group(['middleware' => ['auth:sanctum']], function () {
-    // Route::put('/users/{id}', [UserController::class, 'update']);
+    Route::put('/users/{user}', [UserController::class, 'update']);
     Route::delete('/users/{user}', [UserController::class, 'delete']);
     Route::get('/users', [UserController::class, 'all']);
 });
