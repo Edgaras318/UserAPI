@@ -22,10 +22,9 @@ class UserController extends Controller
     public function delete(User $user)
     {
         try {
-            $authenticatedUser = Auth::user();
+            $this->authorize('delete', $user);
 
-            // Authorization check handled within the service method
-            $this->userService->deleteUser($authenticatedUser, $user);
+            $this->userService->deleteUser($user);
 
             return response()->json(['message' => 'User deleted successfully'], 200);
         } catch (AuthorizationException $e) {

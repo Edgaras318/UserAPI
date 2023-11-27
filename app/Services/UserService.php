@@ -19,12 +19,8 @@ class UserService
         $this->userDetailsRepository = $userDetailsRepository;
     }
 
-    public function deleteUser(User $authenticatedUser, User $user)
+    public function deleteUser(User $user)
     {
-        // Authorization logic
-        if ($authenticatedUser->id === $user->id) {
-            throw new AuthorizationException('You cannot delete your own account');
-        }
 
         return DB::transaction(function () use ($user) {
             $this->userRepository->delete($user);
