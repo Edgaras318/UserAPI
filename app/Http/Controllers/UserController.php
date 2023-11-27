@@ -5,50 +5,52 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\CreateUserRequest;
 use App\Http\Requests\UpdateUserRequest;
-use App\Repositories\UserRepository;
-use App\Repositories\UserDetailsRepository;
+use App\Services\UserService;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Auth\Access\AuthorizationException;
 
 class UserController extends Controller
 {
-    protected $userRepository;
-    protected $userDetailsRepository;
+    protected $userService;
 
-    public function __construct(UserRepository $userRepository, UserDetailsRepository $userDetailsRepository)
+    public function __construct(UserService $userService)
     {
-        $this->userRepository = $userRepository;
-        $this->userDetailsRepository = $userDetailsRepository;
+        $this->userService = $userService;
     }
 
+    public function delete(User $user)
+    {
+        try {
+            $authenticatedUser = Auth::user();
+
+            // Authorization check handled within the service method
+            $this->userService->deleteUser($authenticatedUser, $user);
+
+            return response()->json(['message' => 'User deleted successfully'], 200);
+        } catch (AuthorizationException $e) {
+            return response()->json(['message' => 'You cannot delete your own account'], 403);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to delete user'], 500);
+        }
+    }
 
     public function create(CreateUserRequest $request)
     {
-
         try {
             DB::beginTransaction();
 
             $userData = $request->only(['first_name', 'last_name', 'email', 'password']);
-            $user = $this->userRepository->create($userData);
+            $address = $request->input('address');
 
-            if ($request->has('address')) {
-                $userDetailsData = [
-                    'user_id' => $user->id,
-                    'address' => $request->input('address'),
-                ];
-                $this->userDetailsRepository->create($userDetailsData);
-            }
-
-            // Generate token for the user
-            $token = $user->createToken('api-token')->plainTextToken;
+            $user = $this->userService->createUser($userData, $address);
 
             DB::commit();
 
             return response()->json([
                 'message' => 'User created successfully',
-                'user' => $user,
-                'token' => $token,
+                'user' => $user['user'],
+                'token' => $user['token'],
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -57,59 +59,30 @@ class UserController extends Controller
         }
     }
 
-    public function delete(User $user)
-    {
-        try {
+    // public function update(UpdateUserRequest $request, User $user)
+    // {
+    //     try {
+    //         DB::beginTransaction();
 
-            $authenticatedUser = Auth::user();
+    //         $userData = $request->only(['first_name', 'last_name', 'email', 'password']);
+    //         $this->userRepository->update($user, $userData);
 
-            // Check authorization before beginning the transaction
-            $this->authorize('delete', [$authenticatedUser, $user]);
+    //         // Update user details if needed...
 
-            DB::beginTransaction();
+    //         DB::commit();
 
-            $this->userRepository->delete($user);
+    //         return response()->json(['message' => 'User updated successfully', 'user' => $user], 200);
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
 
-            if ($user->userDetails) {
-                $this->userDetailsRepository->delete($user->userDetails);
-            }
-
-            DB::commit();
-
-            return response()->json(['message' => 'User deleted successfully'], 200);
-        } catch (AuthorizationException $e) {
-            // If the policy fails, catch the AuthorizationException and return a specific error message
-            return response()->json(['message' => 'You cannot delete your own account'], 403);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['message' => 'Failed to delete user'], 500);
-        }
-    }
-
-    public function update(UpdateUserRequest $request, User $user)
-    {
-        try {
-            DB::beginTransaction();
-
-            $userData = $request->only(['first_name', 'last_name', 'email', 'password']);
-            $this->userRepository->update($user, $userData);
-
-            // Update user details if needed...
-
-            DB::commit();
-
-            return response()->json(['message' => 'User updated successfully', 'user' => $user], 200);
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            return response()->json(['message' => 'Failed to update user'], 500);
-        }
-    }
+    //         return response()->json(['message' => 'Failed to update user'], 500);
+    //     }
+    // }
 
 
     public function all()
     {
-        $users = $this->userRepository->all();
+        $users = $this->userService->getAllUsers();
 
         return response()->json(['users' => $users], 200);
     }
