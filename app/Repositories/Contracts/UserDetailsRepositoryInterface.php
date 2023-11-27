@@ -11,5 +11,5 @@ interface UserDetailsRepositoryInterface
 
   // public function update(UserDetail $userDetail, array $newUserDetailsData);
 
-  // public function delete(UserDetail $userDetail);
+  public function delete(UserDetails $userDetails);
 }

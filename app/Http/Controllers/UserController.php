@@ -55,6 +55,28 @@ class UserController extends Controller
         }
     }
 
+    public function delete(User $user)
+    {
+        try {
+            DB::beginTransaction();
+
+            $this->userRepository->delete($user);
+
+            if ($user->userDetails) {
+                $this->userDetailsRepository->delete($user->userDetails);
+            }
+
+            DB::commit();
+
+            return response()->json(['message' => 'User deleted successfully'], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json(['message' => 'Failed to delete user'], 500);
+        }
+    }
+
+
     public function all()
     {
         $users = $this->userRepository->all();
