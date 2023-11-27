@@ -59,6 +59,27 @@ class UserController extends Controller
         }
     }
 
+    // public function update(UpdateUserRequest $request, User $user)
+    // {
+    //     try {
+    //         DB::beginTransaction();
+
+    //         $userData = $request->only(['first_name', 'last_name', 'email', 'password']);
+    //         $this->userRepository->update($user, $userData);
+
+    //         // Update user details if needed...
+
+    //         DB::commit();
+
+    //         return response()->json(['message' => 'User updated successfully', 'user' => $user], 200);
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+
+    //         return response()->json(['message' => 'Failed to update user'], 500);
+    //     }
+    // }
+
+
     public function all()
     {
         $users = $this->userService->getAllUsers();
