@@ -2,10 +2,8 @@
 
 namespace App\Services;
 
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
-use App\Models\UserDetails;
 use App\Repositories\UserRepository;
 use App\Repositories\UserDetailsRepository;
 
