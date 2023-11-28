@@ -37,14 +37,10 @@ class UserController extends Controller
     public function create(CreateUserRequest $request)
     {
         try {
-            DB::beginTransaction();
-
             $userData = $request->only(['first_name', 'last_name', 'email', 'password']);
             $address = $request->input('address');
 
             $user = $this->userService->createUser($userData, $address);
-
-            DB::commit();
 
             return response()->json([
                 'message' => 'User created successfully',
