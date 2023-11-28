@@ -9,7 +9,7 @@ interface UserDetailsRepositoryInterface
 {
   public function create(array $userDetailsData);
 
-  // public function update(UserDetail $userDetail, array $newUserDetailsData);
+  public function update(UserDetails $userDetails, array $newUserDetailsData);
 
   public function delete(UserDetails $userDetails);
 }

@@ -12,8 +12,14 @@ class UserDetailsRepository implements UserDetailsRepositoryInterface
   {
     return UserDetails::create($attributes);
   }
+
   public function delete(UserDetails $userDetails)
   {
     $userDetails->delete();
+  }
+
+  public function update(UserDetails $userDetails, array $attributes): bool
+  {
+    return $userDetails->update($attributes);
   }
 }
