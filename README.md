@@ -62,7 +62,3 @@ The project includes some unit and feature tests, you can run them with:
 php artisan test
 
 ```
-
-```
-
-```
