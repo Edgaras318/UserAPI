@@ -24,11 +24,16 @@ class UserService
     {
 
         return DB::transaction(function () use ($user) {
-            $this->userRepository->delete($user);
+            $deletedUser = $this->userRepository->delete($user);
 
             if ($user->userDetails) {
-                $this->userDetailsRepository->delete($user->userDetails);
+                $deletedUserDetails = $this->userDetailsRepository->delete($user->userDetails);
+            } else {
+                // If there are no user details, consider it as successfully deleted
+                $deletedUserDetails = true;
             }
+
+            return $deletedUser && $deletedUserDetails;
         });
     }
 

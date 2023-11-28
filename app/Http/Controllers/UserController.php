@@ -7,7 +7,6 @@ use App\Http\Requests\CreateUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Services\UserService;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Auth\Access\AuthorizationException;
 
 class UserController extends Controller
