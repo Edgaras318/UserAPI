@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit\Controllers;
+namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -112,7 +112,6 @@ class UserControllerTest extends TestCase
     $response->assertStatus(200)
       ->assertJson([
         'users' => $users, // Compare directly to the retrieved users
-        // Add more assertions based on the expected response structure
       ]);
   }
 }
