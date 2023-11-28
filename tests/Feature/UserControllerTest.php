@@ -109,6 +109,45 @@ class UserControllerTest extends TestCase
       ]);
   }
 
+  public function test_invalid_data_cannot_create_user()
+  {
+    $invalidUserData = [
+      'first_name' => 'John',
+      // Missing 'last_name', 'email', 'password', 'password_confirmation', 'address'
+    ];
+
+    // Send a POST request to create a user with invalid data
+    $response = $this->withHeaders(['Accept' => 'application/json'])->post('/api/register', $invalidUserData);
+
+    // Assert response status and content
+    $response->assertStatus(422)
+      ->assertJsonValidationErrors(['last_name', 'email', 'password']);
+  }
+
+  public function test_authenticated_user_cannot_update_with_invalid_data()
+  {
+    // Invalid update payload without required fields
+    $invalidUpdateData = [
+      // Missing 'first_name', 'last_name', 'email', 'password'
+      'first_name' => '', // Empty first name
+      'last_name' => '', // Empty last name
+      'email' => '', // Empty email
+      // Password is not provided
+      // Include other fields required for update, if any
+    ];
+
+    // Simulate authentication by acting as the user
+    // Send a PUT request to update the user's own profile with invalid data
+    $response = $this->withHeaders(['Accept' => 'application/json'])
+      ->actingAs($this->user)
+      ->put("/api/users/{$this->user->id}", $invalidUpdateData);
+
+    // Assert response status and content
+    $response->assertStatus(422)
+      ->assertJsonValidationErrors(['first_name', 'last_name', 'email', 'password']);
+  }
+
+
   private function createUser(): User
   {
     return User::factory()->create();
