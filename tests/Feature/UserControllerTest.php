@@ -19,7 +19,7 @@ class UserControllerTest extends TestCase
     $this->user = $this->createUser();
   }
 
-  public function test_can_create_user()
+  public function test_can_create_user_successful()
   {
     // Create a user request payload
     $userData = [
@@ -41,7 +41,7 @@ class UserControllerTest extends TestCase
       ]);
   }
 
-  public function test_authenticated_user_can_update_own_profile()
+  public function test_authenticated_user_can_update_own_profile_successful()
   {
     // Update payload
     $updateData = [
@@ -74,7 +74,8 @@ class UserControllerTest extends TestCase
         'message' => 'You cannot delete your own account',
       ]);
   }
-  public function test_authenticated_user_can_delete_other_user_account()
+
+  public function test_authenticated_user_can_delete_other_user_account_successful()
   {
     // Create User
     $createdUser = User::factory()->create();
@@ -87,9 +88,12 @@ class UserControllerTest extends TestCase
       ->assertJson([
         'message' => 'User deleted successfully',
       ]);
+
+    // Check if deleted user is not prsent in database anymore
+    $this->assertDatabaseMissing('users', $createdUser->toArray());
   }
 
-  public function test_authenticated_user_can_get_all_users()
+  public function test_authenticated_user_can_get_all_users_successful()
   {
     // Simulate authentication by acting as the user
     // Send a GET request to retrieve all users
