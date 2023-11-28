@@ -51,13 +51,17 @@ PUT   /api/users/:id
 @body: first_name, last_name, email, password, ?password_confirmation, ?address
 
 DELETE  /api/users/:id
+```
 
 ## Testing
 
 The project includes some unit and feature tests, you can run them with:
+
 ```
 
 php artisan test
+
+```
 
 ```
 
