@@ -19,7 +19,7 @@ class UserControllerTest extends TestCase
     $this->user = $this->createUser();
   }
 
-  public function test_can_create_user_with_details_successfully()
+  public function test_can_create_user_with_user_details_successfully()
   {
     // Create a user request payload
     $userData = [
@@ -51,7 +51,7 @@ class UserControllerTest extends TestCase
     ]);
   }
 
-  public function test_can_create_user_without_optional_details_successfully()
+  public function test_can_create_user_without_optional_user_details_successfully()
   {
     // Create a user request payload
     $userData = [
@@ -80,7 +80,7 @@ class UserControllerTest extends TestCase
     $this->assertDatabaseMissing('user_details', ['user_id' => $this->user->id]);
   }
 
-  public function test_authenticated_user_can_update_own_profile_with_details_successfully()
+  public function test_authenticated_user_can_update_own_profile_with_user_details_successfully()
   {
     // Update payload
     $updateData = [
@@ -107,7 +107,7 @@ class UserControllerTest extends TestCase
     ]);
   }
 
-  public function test_authenticated_user_can_update_own_profile_without_optional_details_successfully()
+  public function test_authenticated_user_can_update_own_profile_without_optional_user_details_successfully()
   {
     // Update payload
     $updateData = [
@@ -128,7 +128,7 @@ class UserControllerTest extends TestCase
       ]);
   }
 
-  public function test_authenticated_user_can_delete_other_user_account_successfully()
+  public function test_authenticated_user_can_delete_other_user_and_user_details_successfully()
   {
     // Create User
     $createdUser = User::factory()->create();
