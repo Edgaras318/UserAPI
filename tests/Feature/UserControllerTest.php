@@ -19,7 +19,7 @@ class UserControllerTest extends TestCase
     $this->user = $this->createUser();
   }
 
-  public function test_can_create_user_successful()
+  public function test_can_create_user_with_details_successfully()
   {
     // Create a user request payload
     $userData = [
@@ -39,9 +39,75 @@ class UserControllerTest extends TestCase
       ->assertJson([
         'message' => 'User created successfully',
       ]);
+
+    // Check if the user is present in the database
+    $this->assertDatabaseHas('users', [
+      'email' => 'john@example.com',
+    ]);
+
+    // Check if the user details is present in the database
+    $this->assertDatabaseHas('user_details', [
+      'address' => '123 Main St',
+    ]);
   }
 
-  public function test_authenticated_user_can_update_own_profile_successful()
+  public function test_can_create_user_without_optional_details_successfully()
+  {
+    // Create a user request payload
+    $userData = [
+      'first_name' => 'John',
+      'last_name' => 'Doe',
+      'email' => 'john@example.com',
+      'password' => 'password',
+      'password_confirmation' => 'password',
+    ];
+
+    // Send a POST request to create a user
+    $response = $this->post('/api/register', $userData);
+
+    // Assert response status and content
+    $response->assertStatus(201)
+      ->assertJson([
+        'message' => 'User created successfully',
+      ]);
+
+    // Check if the user is present in the database
+    $this->assertDatabaseHas('users', [
+      'email' => 'john@example.com',
+    ]);
+
+    // Check if user details record was not created
+    $this->assertDatabaseMissing('user_details', ['user_id' => $this->user->id]);
+  }
+
+  public function test_authenticated_user_can_update_own_profile_with_details_successfully()
+  {
+    // Update payload
+    $updateData = [
+      'first_name' => 'Jane',
+      'last_name' => 'Doe',
+      'email' => 'john1@example.com',
+      'password' => 'password1',
+      'address' => 'test 123'
+    ];
+
+    // Simulate authentication by acting as the user
+    // Send a PUT request to update the user's own profile
+    $response = $this->actingAs($this->user)->put("/api/users/{$this->user->id}", $updateData);
+
+    // Assert response status and content
+    $response->assertStatus(200)
+      ->assertJson([
+        'message' => 'User updated successfully',
+      ]);
+
+    // Check if the user details is present in the database
+    $this->assertDatabaseHas('user_details', [
+      'address' => 'test 123',
+    ]);
+  }
+
+  public function test_authenticated_user_can_update_own_profile_without_optional_details_successfully()
   {
     // Update payload
     $updateData = [
@@ -62,20 +128,7 @@ class UserControllerTest extends TestCase
       ]);
   }
 
-  public function test_authenticated_user_cannot_delete_own_account()
-  {
-    // Simulate authentication by acting as the user
-    // Send a DELETE request to delete the user's own account
-    $response = $this->actingAs($this->user)->delete("/api/users/{$this->user->id}");
-
-    // Assert response status and content
-    $response->assertStatus(403)
-      ->assertJson([
-        'message' => 'You cannot delete your own account',
-      ]);
-  }
-
-  public function test_authenticated_user_can_delete_other_user_account_successful()
+  public function test_authenticated_user_can_delete_other_user_account_successfully()
   {
     // Create User
     $createdUser = User::factory()->create();
@@ -89,11 +142,27 @@ class UserControllerTest extends TestCase
         'message' => 'User deleted successfully',
       ]);
 
-    // Check if deleted user is not prsent in database anymore
+    // Check if deleted user is not present in database anymore
     $this->assertDatabaseMissing('users', $createdUser->toArray());
+
+    // Check if user details record was deleted
+    $this->assertDatabaseMissing('user_details', ['user_id' => $this->user->id]);
   }
 
-  public function test_authenticated_user_can_get_all_users_successful()
+  public function test_authenticated_user_cannot_delete_own_account()
+  {
+    // Simulate authentication by acting as the user
+    // Send a DELETE request to delete the user's own account
+    $response = $this->actingAs($this->user)->delete("/api/users/{$this->user->id}");
+
+    // Assert response status and content
+    $response->assertStatus(403)
+      ->assertJson([
+        'message' => 'You cannot delete your own account',
+      ]);
+  }
+
+  public function test_authenticated_user_can_get_all_users_successfully()
   {
     // Simulate authentication by acting as the user
     // Send a GET request to retrieve all users
@@ -109,10 +178,10 @@ class UserControllerTest extends TestCase
       ]);
   }
 
-  public function test_invalid_data_cannot_create_user()
+  public function test_authenticated_user_cannot_create_user_with_missing_required_fields()
   {
     $invalidUserData = [
-      'first_name' => 'John',
+      'first_name' => '',
       // Missing 'last_name', 'email', 'password', 'password_confirmation', 'address'
     ];
 
@@ -124,7 +193,7 @@ class UserControllerTest extends TestCase
       ->assertJsonValidationErrors(['last_name', 'email', 'password']);
   }
 
-  public function test_authenticated_user_cannot_update_with_invalid_data()
+  public function test_authenticated_user_cannot_update_user_with_missing_required_fields()
   {
     // Invalid update payload without required fields
     $invalidUpdateData = [
@@ -147,6 +216,37 @@ class UserControllerTest extends TestCase
       ->assertJsonValidationErrors(['first_name', 'last_name', 'email', 'password']);
   }
 
+  public function test_authenticated_user_cannot_delete_nonexistent_user()
+  {
+    // Nonexistent user ID
+    $nonexistentUserId = 999;
+
+    // Send a DELETE request to delete a nonexistent user
+    $response = $this->actingAs($this->user)->delete("/api/users/{$nonexistentUserId}");
+
+    // Assert response status and content
+    $response->assertStatus(404);
+  }
+
+  public function test_authenticated_user_cannot_update_nonexistent_user()
+  {
+    // Nonexistent user ID
+    $nonexistentUserId = 999;
+
+    // Update payload
+    $updateData = [
+      'first_name' => 'Jane',
+      'last_name' => 'Doe',
+      'email' => 'jane@example.com',
+      'password' => 'password1',
+    ];
+
+    // Send a PUT request to update a nonexistent user
+    $response = $this->actingAs($this->user)->put("/api/users/{$nonexistentUserId}", $updateData);
+
+    // Assert response status and content
+    $response->assertStatus(404);
+  }
 
   private function createUser(): User
   {
