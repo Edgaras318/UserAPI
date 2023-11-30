@@ -107,6 +107,60 @@ class UserControllerTest extends TestCase
     ]);
   }
 
+  public function test_authenticated_user_can_update_other_user_profile_without_optional_user_details_successfully()
+  {
+    // Create another user
+    $createdUser = $this->createUser();
+
+    // Update payload
+    $updateData = [
+      'first_name' => 'Jane',
+      'last_name' => 'Doe',
+      'email' => 'john1@example.com',
+      'password' => 'password1',
+    ];
+
+    // Simulate authentication by acting as the user
+    // Send a PUT request to update the user's own profile
+    $response = $this->actingAs($this->user)->put("/api/users/{$createdUser->id}", $updateData);
+
+    // Assert response status and content
+    $response->assertStatus(200)
+      ->assertJson([
+        'message' => 'User updated successfully',
+      ]);
+  }
+
+  public function test_authenticated_user_can_update_other_user_profile_with_user_details_successfully()
+  {
+    // Create another user
+    $createdUser = $this->createUser();
+
+    // Update payload
+    $updateData = [
+      'first_name' => 'Jane',
+      'last_name' => 'Doe',
+      'email' => 'john1@example.com',
+      'password' => 'password1',
+      'address' => 'test 123'
+    ];
+
+    // Simulate authentication by acting as the user
+    // Send a PUT request to update the user's own profile
+    $response = $this->actingAs($this->user)->put("/api/users/{$createdUser->id}", $updateData);
+
+    // Assert response status and content
+    $response->assertStatus(200)
+      ->assertJson([
+        'message' => 'User updated successfully',
+      ]);
+
+    // Check if the user details is present in the database
+    $this->assertDatabaseHas('user_details', [
+      'address' => 'test 123',
+    ]);
+  }
+
   public function test_authenticated_user_can_update_own_profile_without_optional_user_details_successfully()
   {
     // Update payload
@@ -130,8 +184,8 @@ class UserControllerTest extends TestCase
 
   public function test_authenticated_user_can_delete_other_user_and_user_details_successfully()
   {
-    // Create User
-    $createdUser = User::factory()->create();
+    // Create another user
+    $createdUser = $this->createUser();
 
     // Send a DELETE request to delete user B's account
     $response = $this->actingAs($this->user)->delete("/api/users/{$createdUser->id}");
@@ -146,7 +200,7 @@ class UserControllerTest extends TestCase
     $this->assertDatabaseMissing('users', $createdUser->toArray());
 
     // Check if user details record was deleted
-    $this->assertDatabaseMissing('user_details', ['user_id' => $this->user->id]);
+    $this->assertDatabaseMissing('user_details', ['user_id' => $createdUser->id]);
   }
 
   public function test_authenticated_user_cannot_delete_own_account()
