@@ -10,9 +10,6 @@ class UserRepository implements UserRepositoryInterface
 {
   public function create(array $attributes): User
   {
-    // Hash the password before creating the user
-    $attributes['password'] = bcrypt($attributes['password']);
-
     return User::create($attributes);
   }
 

@@ -58,6 +58,9 @@ class UserService
     public function createUser(array $userData, ?string $address = null)
     {
         return DB::transaction(function () use ($userData, $address) {
+            // Hash the password before creating the user
+            $userData['password'] = bcrypt($userData['password']);
+
             $user = $this->userRepository->create($userData);
 
             if ($address) {
