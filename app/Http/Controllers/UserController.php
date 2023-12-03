@@ -47,8 +47,6 @@ class UserController extends Controller
                 'token' => $user['token'],
             ], 201);
         } catch (\Exception $e) {
-            DB::rollBack();
-
             return response()->json(['message' => 'Failed to create user'], 500);
         }
     }
