@@ -6,7 +6,6 @@ use Tests\TestCase;
 use App\Services\UserService;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Validation\ValidationException;
 
 class UserServiceTest extends TestCase
 {
